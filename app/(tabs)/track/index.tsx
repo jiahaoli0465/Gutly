@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Animated,
   FlatList,
@@ -10,13 +10,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import QuickActionFAB from '../../../components/QuickActionFAB';
 import { useTheme } from '../../../context/ThemeContext';
+import { AddMealModal } from './components/AddMealModal';
 import { EmptyState } from './components/EmptyState';
 import { Header } from './components/Header';
+import { ItemDetailModal } from './components/ItemDetailModal';
+import { LogSymptomModal } from './components/LogSymptomModal';
 import { MealCard } from './components/MealCard';
 import { SymptomCard } from './components/SymptomCard';
-import { TimelineItem } from './types';
+import { MealItem, SymptomItem, TimelineItem } from './types';
 
 // Mock data
 const MOCK_TIMELINE_ITEMS: TimelineItem[] = [
@@ -58,9 +62,11 @@ const MOCK_TIMELINE_ITEMS: TimelineItem[] = [
 const TimelineItemCard = ({
   item,
   isLastItem = false,
+  onPress,
 }: {
   item: TimelineItem;
   isLastItem?: boolean;
+  onPress: () => void;
 }) => {
   const { theme } = useTheme();
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -130,7 +136,11 @@ const TimelineItemCard = ({
           },
         ]}
       >
-        <TouchableOpacity activeOpacity={0.75} style={styles.cardTouchable}>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          style={styles.cardTouchable}
+          onPress={onPress}
+        >
           {item.type === 'meal' ? (
             <MealCard item={item} />
           ) : (
@@ -144,28 +154,72 @@ const TimelineItemCard = ({
 
 export default function TrackerScreen() {
   const { theme } = useTheme();
+  const [items, setItems] = useState<TimelineItem[]>(MOCK_TIMELINE_ITEMS);
+  const [isAddMealVisible, setIsAddMealVisible] = useState(false);
+  const [isLogSymptomVisible, setIsLogSymptomVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+
   const sortedItems = useMemo(() => {
-    return [...MOCK_TIMELINE_ITEMS].sort(
+    return [...items].sort(
       (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
     );
-  }, []);
+  }, [items]);
+
+  const handleAddMeal = (meal: Omit<MealItem, 'id'>) => {
+    const newMeal: MealItem = {
+      ...meal,
+      id: Date.now().toString(),
+    };
+    setItems([...items, newMeal]);
+    Toast.show({
+      type: 'success',
+      text1: 'Meal added',
+      position: 'bottom',
+      bottomOffset: 80,
+    });
+  };
+
+  const handleLogSymptom = (symptom: Omit<SymptomItem, 'id'>) => {
+    const newSymptom: SymptomItem = {
+      ...symptom,
+      id: Date.now().toString(),
+    };
+    setItems([...items, newSymptom]);
+    Toast.show({
+      type: 'success',
+      text1: 'Symptom logged',
+      position: 'bottom',
+      bottomOffset: 80,
+    });
+  };
+
+  const handleItemPress = (item: TimelineItem) => {
+    setSelectedItem(item);
+    setIsDetailModalVisible(true);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setItems(items.filter((item) => item.id !== id));
+    setIsDetailModalVisible(false);
+    Toast.show({
+      type: 'success',
+      text1: 'Item deleted',
+      position: 'bottom',
+      bottomOffset: 80,
+    });
+  };
 
   const quickActions = [
     {
       label: 'Add Meal',
       icon: 'restaurant',
-      onPress: () => {
-        // TODO: Implement add meal
-        console.log('Add meal');
-      },
+      onPress: () => setIsAddMealVisible(true),
     },
     {
       label: 'Log Symptom',
       icon: 'medkit',
-      onPress: () => {
-        // TODO: Implement log symptom
-        console.log('Log symptom');
-      },
+      onPress: () => setIsLogSymptomVisible(true),
     },
   ];
 
@@ -180,6 +234,7 @@ export default function TrackerScreen() {
       <TimelineItemCard
         item={item}
         isLastItem={index === sortedItems.length - 1}
+        onPress={() => handleItemPress(item)}
       />
     );
   };
@@ -212,6 +267,28 @@ export default function TrackerScreen() {
       )}
 
       <QuickActionFAB actions={quickActions} />
+
+      <AddMealModal
+        visible={isAddMealVisible}
+        onClose={() => setIsAddMealVisible(false)}
+        onSave={handleAddMeal}
+      />
+
+      <LogSymptomModal
+        visible={isLogSymptomVisible}
+        onClose={() => setIsLogSymptomVisible(false)}
+        onSave={handleLogSymptom}
+      />
+
+      <ItemDetailModal
+        visible={isDetailModalVisible}
+        item={selectedItem}
+        onClose={() => {
+          setIsDetailModalVisible(false);
+          setTimeout(() => setSelectedItem(null), 300); // Clear after animation
+        }}
+        onDelete={(id) => handleDeleteItem(id)}
+      />
     </SafeAreaView>
   );
 }
