@@ -1,8 +1,8 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
-  ScrollView,
+  Animated,
+  FlatList,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -10,136 +10,178 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AddMealModal from '../../../components/AddMealModal';
-import { EmptyState } from '../../../components/meals/EmptyState';
-import { MealCard } from '../../../components/meals/MealCard';
-import { NutritionSummary } from '../../../components/meals/NutritionSummary';
-import { Meal } from '../../../components/meals/types';
-import QuickActionFAB, {
-  QuickAction,
-} from '../../../components/QuickActionFAB';
+import QuickActionFAB from '../../../components/QuickActionFAB';
 import { useTheme } from '../../../context/ThemeContext';
+import { EmptyState } from './components/EmptyState';
+import { Header } from './components/Header';
+import { MealCard } from './components/MealCard';
+import { SymptomCard } from './components/SymptomCard';
+import { TimelineItem } from './types';
 
-const TABS = ['Day', 'Week', 'Month'];
+// Mock data
+const MOCK_TIMELINE_ITEMS: TimelineItem[] = [
+  {
+    id: '1',
+    type: 'meal',
+    timestamp: new Date('2024-05-09T08:30:00'),
+    photo: 'https://picsum.photos/300/200',
+    foodLabels: ['Greek Yogurt', 'Granola', 'Blueberries'],
+    calories: 310,
+  },
+  {
+    id: '2',
+    type: 'symptom',
+    timestamp: new Date('2024-05-09T10:15:00'),
+    symptom: 'Bloating',
+    severity: 3,
+    bristolScore: 4,
+  },
+  {
+    id: '3',
+    type: 'meal',
+    timestamp: new Date('2024-05-09T12:45:00'),
+    photo: 'https://picsum.photos/300/200',
+    foodLabels: ['Quinoa Salad', 'Grilled Chicken', 'Avocado'],
+    calories: 560,
+  },
+  {
+    id: '4',
+    type: 'symptom',
+    timestamp: new Date('2024-05-09T14:30:00'),
+    symptom: 'Abdominal Pain',
+    severity: 2,
+    bristolScore: 3,
+  },
+];
 
-// Mock data for meals
-const MEALS_DATA: Record<string, Meal[]> = {
-  Day: [
-    {
-      id: '1',
-      type: 'Breakfast',
-      time: '8:30 AM',
-      items: [
-        { name: 'Greek Yogurt', calories: 150, protein: 15, carbs: 10, fat: 5 },
-        { name: 'Granola', calories: 120, protein: 3, carbs: 20, fat: 4 },
-        { name: 'Blueberries', calories: 40, protein: 0, carbs: 10, fat: 0 },
-      ],
-      totalCalories: 310,
-      gutHealthScore: 85,
-    },
-    {
-      id: '2',
-      type: 'Lunch',
-      time: '12:45 PM',
-      items: [
-        { name: 'Quinoa Salad', calories: 220, protein: 8, carbs: 35, fat: 6 },
-        {
-          name: 'Grilled Chicken',
-          calories: 180,
-          protein: 30,
-          carbs: 0,
-          fat: 6,
-        },
-        { name: 'Avocado', calories: 160, protein: 2, carbs: 8, fat: 15 },
-      ],
-      totalCalories: 560,
-      gutHealthScore: 92,
-    },
-    {
-      id: '3',
-      type: 'Dinner',
-      time: '7:15 PM',
-      items: [
-        { name: 'Salmon', calories: 250, protein: 25, carbs: 0, fat: 15 },
-        { name: 'Brown Rice', calories: 180, protein: 4, carbs: 37, fat: 1 },
-        {
-          name: 'Steamed Broccoli',
-          calories: 55,
-          protein: 4,
-          carbs: 11,
-          fat: 0,
-        },
-      ],
-      totalCalories: 485,
-      gutHealthScore: 88,
-    },
-  ],
-  Week: [],
-  Month: [],
+// Timeline item component with elegant animations
+const TimelineItemCard = ({
+  item,
+  isLastItem = false,
+}: {
+  item: TimelineItem;
+  isLastItem?: boolean;
+}) => {
+  const { theme } = useTheme();
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = React.useRef(new Animated.Value(0.97)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: theme.animation.duration.normal,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 7,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const formattedTime = useMemo(() => {
+    return item.timestamp
+      .toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+      .toLowerCase();
+  }, [item.timestamp]);
+
+  return (
+    <View style={styles.timelineItem}>
+      <View style={styles.timeContainer}>
+        <Text style={[styles.timeText, { color: theme.colors.text.secondary }]}>
+          {formattedTime}
+        </Text>
+      </View>
+
+      <View style={styles.timelineConnectorContainer}>
+        <View
+          style={[
+            styles.timelineDot,
+            item.type === 'meal'
+              ? { backgroundColor: theme.colors.primary.main }
+              : { backgroundColor: theme.colors.error.main },
+          ]}
+        />
+
+        {!isLastItem && (
+          <View
+            style={[
+              styles.timelineLine,
+              { backgroundColor: theme.colors.divider },
+            ]}
+          />
+        )}
+      </View>
+
+      <Animated.View
+        style={[
+          styles.cardContainer,
+          theme.shadows.sm,
+          { backgroundColor: theme.colors.background.paper },
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        <TouchableOpacity activeOpacity={0.75} style={styles.cardTouchable}>
+          {item.type === 'meal' ? (
+            <MealCard item={item} />
+          ) : (
+            <SymptomCard item={item} />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
 };
 
-// Calculate nutrition totals from meals data
-const calculateDailyTotals = () => {
-  let calories = 0;
-  let protein = 0;
-  let carbs = 0;
-  let fat = 0;
+export default function TrackerScreen() {
+  const { theme } = useTheme();
+  const sortedItems = useMemo(() => {
+    return [...MOCK_TIMELINE_ITEMS].sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+    );
+  }, []);
 
-  MEALS_DATA.Day.forEach((meal) => {
-    meal.items.forEach((item) => {
-      calories += item.calories;
-      protein += item.protein;
-      carbs += item.carbs;
-      fat += item.fat;
-    });
-  });
-
-  return { calories, protein, carbs, fat };
-};
-
-export default function MealsScreen() {
-  const { theme, isDark } = useTheme();
-  const params = useLocalSearchParams<{ add?: string }>();
-  const router = useRouter();
-  const [tab, setTab] = useState('Day');
-  const [showAddMealSheet, setShowAddMealSheet] = useState(false);
-  const [addMealMode, setAddMealMode] = useState<
-    'camera' | 'gallery' | 'manual' | null
-  >(null);
-
-  // Calculate the nutrition data
-  const nutritionData = calculateDailyTotals();
-
-  // Actions for the FAB
-  const fabActions: QuickAction[] = [
+  const quickActions = [
     {
-      icon: 'camera',
-      label: 'Take Photo',
-      onPress: () => handleAddMeal('camera'),
+      label: 'Add Meal',
+      icon: 'restaurant',
+      onPress: () => {
+        // TODO: Implement add meal
+        console.log('Add meal');
+      },
     },
     {
-      icon: 'images',
-      label: 'Gallery',
-      onPress: () => handleAddMeal('gallery'),
-    },
-    {
-      icon: 'create',
-      label: 'Manual Entry',
-      onPress: () => handleAddMeal('manual'),
+      label: 'Log Symptom',
+      icon: 'medkit',
+      onPress: () => {
+        // TODO: Implement log symptom
+        console.log('Log symptom');
+      },
     },
   ];
 
-  useEffect(() => {
-    if (params.add) {
-      router.setParams({ add: undefined });
-      setAddMealMode('manual');
-      setShowAddMealSheet(true);
-    }
-  }, [params.add]);
-
-  const handleAddMeal = (mode: 'camera' | 'gallery' | 'manual') => {
-    setAddMealMode(mode);
-    setShowAddMealSheet(true);
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: TimelineItem;
+    index: number;
+  }) => {
+    return (
+      <TimelineItemCard
+        item={item}
+        isLastItem={index === sortedItems.length - 1}
+      />
+    );
   };
 
   return (
@@ -148,140 +190,28 @@ export default function MealsScreen() {
         styles.container,
         { backgroundColor: theme.colors.background.default },
       ]}
+      edges={['top']}
     >
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-
-      {/* App Bar */}
-      <View style={styles.header}>
-        <Text
-          style={[styles.screenTitle, { color: theme.colors.text.primary }]}
-        >
-          Meals
-        </Text>
-        <TouchableOpacity
-          style={[
-            styles.headerButton,
-            { backgroundColor: theme.colors.background.paper },
-          ]}
-        >
-          <MaterialCommunityIcons
-            name="calendar"
-            size={24}
-            color={theme.colors.text.primary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tab Navigation */}
-      <View
-        style={[
-          styles.tabContainer,
-          { backgroundColor: theme.colors.background.paper },
-        ]}
-      >
-        {TABS.map((t) => (
-          <TouchableOpacity
-            key={t}
-            activeOpacity={0.7}
-            style={[
-              styles.tab,
-              tab === t && [
-                styles.activeTab,
-                { backgroundColor: theme.colors.background.default },
-              ],
-            ]}
-            onPress={() => setTab(t)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                { color: theme.colors.text.secondary },
-                tab === t && { color: theme.colors.primary.main },
-              ]}
-            >
-              {t}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {tab === 'Day' && (
-          <>
-            {/* Pass the calculated nutrition data to the component */}
-            <NutritionSummary nutritionData={nutritionData} />
-
-            {MEALS_DATA.Day.length > 0 ? (
-              <>
-                <View style={styles.sectionHeader}>
-                  <Text
-                    style={[
-                      styles.sectionTitle,
-                      { color: theme.colors.text.primary },
-                    ]}
-                  >
-                    Today's Meals
-                  </Text>
-                  <TouchableOpacity>
-                    <Text
-                      style={[
-                        styles.sectionAction,
-                        { color: theme.colors.primary.main },
-                      ]}
-                    >
-                      See All
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {MEALS_DATA.Day.map((meal) => (
-                  <MealCard key={meal.id} meal={meal} />
-                ))}
-              </>
-            ) : (
-              <EmptyState
-                icon="food-fork-drink"
-                message="No meals logged today"
-                action={{
-                  label: 'Add Your First Meal',
-                  onPress: () => handleAddMeal('manual'),
-                }}
-              />
-            )}
-          </>
-        )}
-
-        {tab === 'Week' && (
-          <EmptyState
-            icon="calendar-week"
-            message="Weekly summary will appear here"
-          />
-        )}
-
-        {tab === 'Month' && (
-          <EmptyState
-            icon="calendar-month"
-            message="Monthly trends will appear here"
-          />
-        )}
-      </ScrollView>
-
-      {/* FAB for adding meals */}
-      <QuickActionFAB actions={fabActions} />
-
-      {/* Add Meal Modal */}
-      <AddMealModal
-        visible={showAddMealSheet}
-        onClose={() => {
-          setShowAddMealSheet(false);
-          setAddMealMode(null);
-        }}
-        initialMode={addMealMode}
-        key={showAddMealSheet ? 'open' : 'closed'}
+      <StatusBar
+        barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'}
+        backgroundColor={theme.colors.background.default}
       />
+
+      <Header />
+
+      {sortedItems.length > 0 ? (
+        <FlatList
+          data={sortedItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <EmptyState />
+      )}
+
+      <QuickActionFAB actions={quickActions} />
     </SafeAreaView>
   );
 }
@@ -290,63 +220,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  listContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingBottom: 100,
   },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  headerButton: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  tabContainer: {
+  timelineItem: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    padding: 4,
+    marginBottom: 20,
+    alignItems: 'flex-start',
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 8,
+  timeContainer: {
+    width: 58,
+    alignItems: 'flex-end',
+    paddingTop: 16,
   },
-  activeTab: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingBottom: 100, // Extra padding for FAB
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  sectionAction: {
-    fontSize: 14,
+  timeText: {
+    fontSize: 13,
     fontWeight: '500',
+  },
+  timelineConnectorContainer: {
+    width: 30,
+    alignItems: 'center',
+    paddingTop: 16,
+  },
+  timelineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    marginBottom: 6,
+  },
+  timelineLine: {
+    width: 1.5,
+    height: 120,
+  },
+  cardContainer: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardTouchable: {
+    width: '100%',
   },
 });

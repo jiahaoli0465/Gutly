@@ -54,8 +54,8 @@ export default function StatCard({ title, value, icon, trend }: StatCardProps) {
             size={16}
             color={
               trend.isPositive
-                ? theme.colors.success.main
-                : theme.colors.error.main
+                ? theme.colors.success.dark
+                : theme.colors.error.dark
             }
           />
           <Text
@@ -63,8 +63,8 @@ export default function StatCard({ title, value, icon, trend }: StatCardProps) {
               styles.trendText,
               {
                 color: trend.isPositive
-                  ? theme.colors.success.main
-                  : theme.colors.error.main,
+                  ? theme.colors.success.dark
+                  : theme.colors.error.dark,
               },
             ]}
           >

@@ -168,7 +168,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   // Determine tab bar height
-  const tabBarHeight = 52;
+  const tabBarHeight = 58;
   const bottomInset = Math.max(insets.bottom, 10);
 
   return (
@@ -215,7 +215,7 @@ export default function TabLayout() {
             ),
           }}
         />
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="insights/index"
           options={{
             title: 'Insights',
@@ -232,7 +232,7 @@ export default function TabLayout() {
               <TabBarIcon name="person-outline" isFocused={focused} />
             ),
           }}
-        />
+        /> */}
       </Tabs>
     </>
   );
@@ -274,10 +274,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     // large area for tap accessibility
-    height: 68,
-    width: 72,
+    height: 74,
+    width: 92,
     // borderWidth: 1,
-    marginTop: 12,
+    marginTop: 16,
     borderColor: 'red',
   },
   shadowContainer: {
