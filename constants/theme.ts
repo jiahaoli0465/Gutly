@@ -1,28 +1,28 @@
 export const theme = {
   colors: {
     primary: {
-      main: '#00E5FF',
-      light: '#00BFA5',
-      dark: '#00897B',
+      main: '#2D6A4F',
+      light: '#40916C',
+      dark: '#1B4332',
       contrast: '#FFFFFF',
     },
     secondary: {
-      main: '#00BFA5',
-      light: '#1DE9B6',
-      dark: '#00897B',
+      main: '#40916C',
+      light: '#74C69D',
+      dark: '#2D6A4F',
       contrast: '#FFFFFF',
     },
     background: {
-      default: '#0A0A0A',
-      paper: '#151515',
-      elevated: '#1A1A1A',
+      default: '#FFFFFF',
+      paper: '#F8F9FA',
+      elevated: '#F0F0F0',
     },
     text: {
-      primary: '#FFFFFF',
-      secondary: 'rgba(255, 255, 255, 0.6)',
-      disabled: 'rgba(255, 255, 255, 0.4)',
+      primary: '#000000',
+      secondary: 'rgba(0, 0, 0, 0.6)',
+      disabled: 'rgba(0, 0, 0, 0.4)',
     },
-    divider: 'rgba(255, 255, 255, 0.1)',
+    divider: 'rgba(0, 0, 0, 0.1)',
     error: {
       main: '#FF5252',
       light: '#FF8A80',
@@ -102,21 +102,21 @@ export const theme = {
   },
   shadows: {
     sm: {
-      shadowColor: '#00E5FF',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 2,
     },
     md: {
-      shadowColor: '#00E5FF',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 4,
     },
     lg: {
-      shadowColor: '#00E5FF',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.2,
       shadowRadius: 12,

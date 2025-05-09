@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import QuickActionFAB from '../../components/QuickActionFAB';
 import StatCard from '../../components/StatCard';
 import { useTheme } from '../../context/ThemeContext';
@@ -24,7 +25,7 @@ export default function HomePage() {
       label: 'Log Meal',
       icon: 'restaurant',
       onPress: () => {
-        router.navigate('/meals?add=1');
+        router.navigate('/track?add=1');
       },
     },
     {
@@ -45,16 +46,28 @@ export default function HomePage() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background.default }}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background.default },
+      ]}
+      edges={['top']}
+    >
       <ScrollView
-        style={styles.container}
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={styles.contentContainer}
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Good morning,</Text>
-            <Text style={styles.name}>Alex</Text>
+            <Text
+              style={[styles.greeting, { color: theme.colors.text.secondary }]}
+            >
+              Good morning,
+            </Text>
+            <Text style={[styles.name, { color: theme.colors.text.primary }]}>
+              Jiahao
+            </Text>
           </View>
           <TouchableOpacity style={styles.profileButton}>
             <LinearGradient
@@ -88,51 +101,84 @@ export default function HomePage() {
         </View>
 
         <View style={styles.recommendationsContainer}>
-          <Text style={styles.sectionTitle}>Today's Recommendations</Text>
-          <View style={styles.recommendationCard}>
-            <LinearGradient
-              colors={[
-                theme.colors.background.paper,
-                theme.colors.background.elevated,
-              ]}
-              style={styles.recommendationGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
+          <Text
+            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
+          >
+            Today's Recommendations
+          </Text>
+          <View
+            style={[
+              styles.recommendationCard,
+              { backgroundColor: theme.colors.background.paper },
+              theme.shadows.sm,
+            ]}
+          >
+            <View style={styles.recommendationContent}>
               <View style={styles.recommendationHeader}>
                 <Ionicons
                   name="bulb"
                   size={24}
                   color={theme.colors.primary.main}
                 />
-                <Text style={styles.recommendationTitle}>
+                <Text
+                  style={[
+                    styles.recommendationTitle,
+                    { color: theme.colors.text.primary },
+                  ]}
+                >
                   Increase Fiber Intake
                 </Text>
               </View>
-              <Text style={styles.recommendationText}>
+              <Text
+                style={[
+                  styles.recommendationText,
+                  { color: theme.colors.text.secondary },
+                ]}
+              >
                 Your gut microbiome would benefit from more fiber-rich foods.
                 Try adding more fruits, vegetables, and whole grains to your
                 diet.
               </Text>
-            </LinearGradient>
+            </View>
           </View>
         </View>
       </ScrollView>
+
       <QuickActionFAB actions={quickActions} />
+
       {modal && (
         <View style={styles.modalOverlay} pointerEvents="box-none">
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{modal}</Text>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.background.paper },
+            ]}
+          >
+            <Text
+              style={[styles.modalTitle, { color: theme.colors.text.primary }]}
+            >
+              {modal}
+            </Text>
             <TouchableOpacity
               onPress={() => setModal(null)}
-              style={styles.modalClose}
+              style={[
+                styles.modalClose,
+                { backgroundColor: theme.colors.background.elevated },
+              ]}
             >
-              <Text style={styles.modalCloseText}>Close</Text>
+              <Text
+                style={[
+                  styles.modalCloseText,
+                  { color: theme.colors.text.secondary },
+                ]}
+              >
+                Close
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -140,23 +186,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 24,
+    paddingBottom: 140,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
+    marginBottom: 32,
   },
   greeting: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
   },
   name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: '700',
   },
   profileButton: {
     width: 48,
@@ -165,9 +214,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#00E5FF',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -183,81 +232,22 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
     gap: 16,
     marginBottom: 32,
   },
-  statCard: {
-    flex: 1,
-    height: 160,
-    borderRadius: 16,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#00E5FF',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  statGradient: {
-    flex: 1,
-    padding: 16,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statTitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginLeft: 8,
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  trendContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  trendText: {
-    fontSize: 14,
-    marginLeft: 4,
-  },
   recommendationsContainer: {
-    paddingHorizontal: 24,
     marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '600',
     marginBottom: 16,
   },
   recommendationCard: {
     borderRadius: 16,
     overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#00E5FF',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
   },
-  recommendationGradient: {
+  recommendationContent: {
     padding: 20,
   },
   recommendationHeader: {
@@ -268,32 +258,28 @@ const styles = StyleSheet.create({
   recommendationTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
     marginLeft: 12,
   },
   recommendationText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.6)',
     lineHeight: 24,
+    fontWeight: '400',
   },
-  fabContainer: {
-    position: 'absolute',
-    right: 24,
-    bottom: 88,
-    alignItems: 'flex-end',
-    zIndex: 10,
-    pointerEvents: 'box-none',
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    overflow: 'hidden',
+  modalContent: {
+    width: '80%',
+    borderRadius: 16,
+    padding: 24,
     ...Platform.select({
       ios: {
-        shadowColor: '#00E5FF',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -301,72 +287,18 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  fabGradient: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fabActionsColumn: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    marginBottom: 16,
-  },
-  fabAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: 'transparent',
-  },
-  fabActionGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 24,
-  },
-  fabActionLabel: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 10,
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 100,
-    pointerEvents: 'box-none',
-  },
-  modalContent: {
-    backgroundColor: '#151515',
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    width: 300,
-  },
   modalTitle: {
-    color: '#fff',
     fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   modalClose: {
-    marginTop: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    backgroundColor: '#00BFA5',
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
   modalCloseText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '500',
   },

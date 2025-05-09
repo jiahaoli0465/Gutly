@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { theme } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -58,6 +58,7 @@ const OnboardingItem = ({
   index: number;
   scrollX: Animated.Value;
 }) => {
+  const { theme } = useTheme();
   const inputRange = [
     (index - 1) * SCREEN_WIDTH,
     index * SCREEN_WIDTH,
@@ -84,7 +85,10 @@ const OnboardingItem = ({
       <View style={styles.contentContainer}>
         <View style={styles.iconContainer}>
           <LinearGradient
-            colors={['#00E5FF', '#00BFA5']}
+            colors={[
+              theme.colors.primary.main,
+              `${theme.colors.primary.main}E6`,
+            ]}
             style={styles.iconGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -102,6 +106,7 @@ const OnboardingItem = ({
             {
               transform: [{ scale: titleScale }],
               opacity,
+              color: theme.colors.text.primary,
             },
           ]}
         >
@@ -113,6 +118,7 @@ const OnboardingItem = ({
             {
               transform: [{ scale: descriptionScale }],
               opacity,
+              color: theme.colors.text.secondary,
             },
           ]}
         >
@@ -130,6 +136,7 @@ const Pagination = ({
   data: OnboardingItem[];
   scrollX: Animated.Value;
 }) => {
+  const { theme } = useTheme();
   return (
     <View style={styles.paginationContainer}>
       {data.map((_, idx) => {
@@ -159,6 +166,7 @@ const Pagination = ({
               {
                 width: dotWidth,
                 opacity,
+                backgroundColor: theme.colors.primary.main,
               },
             ]}
           />
@@ -169,6 +177,7 @@ const Pagination = ({
 };
 
 export default function Onboarding() {
+  const { theme, isDark } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
@@ -188,14 +197,26 @@ export default function Onboarding() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background.default },
+      ]}
+    >
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.skipContainer}>
         <TouchableOpacity
           onPress={() => router.replace('/(tabs)')}
-          style={styles.skipButton}
+          style={[
+            styles.skipButton,
+            { backgroundColor: theme.colors.background.paper },
+          ]}
         >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text
+            style={[styles.skipText, { color: theme.colors.text.secondary }]}
+          >
+            Skip
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -222,12 +243,17 @@ export default function Onboarding() {
 
       <TouchableOpacity style={styles.button} onPress={scrollTo}>
         <LinearGradient
-          colors={['#00E5FF', '#00BFA5']}
+          colors={[theme.colors.primary.main, `${theme.colors.primary.main}E6`]}
           style={styles.buttonGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.buttonText}>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme.colors.primary.contrast },
+            ]}
+          >
             {currentIndex === onboardingData.length - 1
               ? 'Get Started'
               : 'Next'}
@@ -241,7 +267,6 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
   },
   skipContainer: {
     position: 'absolute',
@@ -250,16 +275,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   skipButton: {
-    padding: theme.spacing.sm,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    padding: 8,
     borderRadius: 9999,
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 16,
   },
   skipText: {
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.medium,
-    color: '#fff',
-    opacity: 0.6,
+    fontSize: 16,
+    fontWeight: '500',
   },
   slide: {
     flex: 1,
@@ -270,20 +292,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.layout.screenPadding,
+    padding: 24,
     paddingBottom: SCREEN_HEIGHT * 0.15,
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: theme.spacing.xl,
+    marginBottom: 32,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#00E5FF',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -298,56 +320,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: theme.typography.fontSize['3xl'],
-    fontWeight: theme.typography.fontWeight.bold,
+    fontSize: 30,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
-    color: '#fff',
+    marginBottom: 16,
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(0, 229, 255, 0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   description: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: 18,
     textAlign: 'center',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: 32,
     lineHeight: 24,
-    color: '#fff',
-    opacity: 0.6,
     letterSpacing: 0.3,
   },
   paginationContainer: {
-    position: 'absolute',
-    bottom: SCREEN_HEIGHT * 0.15,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
-    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 32,
   },
   dot: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#00E5FF',
+    height: 8,
+    borderRadius: 4,
     marginHorizontal: 4,
-    opacity: 0.3,
   },
   button: {
     position: 'absolute',
-    bottom: 50,
-    left: 40,
-    right: 40,
-    height: 56,
-    // borderRadius: theme.spacing.borderRadius.lg,
-    borderRadius: 12,
+    bottom: 55,
+    left: 28,
+    right: 28,
+    height: 52,
+    borderRadius: 28,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#00E5FF',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
@@ -362,9 +371,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
-    fontSize: theme.typography.fontSize.lg,
-    fontWeight: theme.typography.fontWeight.semibold,
-    letterSpacing: 0.5,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

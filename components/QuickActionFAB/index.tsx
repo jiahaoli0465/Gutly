@@ -202,7 +202,7 @@ const QuickActionFAB: React.FC<QuickActionFABProps> = ({
                 <LinearGradient
                   colors={[
                     theme.colors.primary.main,
-                    theme.colors.primary.light,
+                    `${theme.colors.primary.main}E6`, // 90% opacity
                   ]}
                   style={styles.actionGradient}
                   start={{ x: 0, y: 0 }}
@@ -221,37 +221,42 @@ const QuickActionFAB: React.FC<QuickActionFABProps> = ({
         </Animated.View>
 
         {/* Main FAB button */}
-        <TouchableOpacity
-          style={styles.fabButton}
-          onPress={toggleMenu}
-          activeOpacity={0.9}
-        >
-          <LinearGradient
-            colors={[theme.colors.primary.main, theme.colors.primary.light]}
-            style={styles.fabGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+        <View style={styles.fabShadowContainer}>
+          <TouchableOpacity
+            style={styles.fabButton}
+            onPress={toggleMenu}
+            activeOpacity={0.9}
           >
-            <Animated.View
-              style={{
-                transform: [
-                  {
-                    rotate: fabRotation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0deg', '135deg'],
-                    }),
-                  },
-                ],
-              }}
+            <LinearGradient
+              colors={[
+                theme.colors.primary.main,
+                `${theme.colors.primary.main}E6`, // 90% opacity
+              ]}
+              style={styles.fabGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <MaterialCommunityIcons
-                name="plus"
-                size={28}
-                color={theme.colors.primary.contrast}
-              />
-            </Animated.View>
-          </LinearGradient>
-        </TouchableOpacity>
+              <Animated.View
+                style={{
+                  transform: [
+                    {
+                      rotate: fabRotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '135deg'],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="plus"
+                  size={28}
+                  color={theme.colors.primary.contrast}
+                />
+              </Animated.View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -262,10 +267,9 @@ const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    width: width,
-    height: height,
-    zIndex: 999,
-    pointerEvents: 'box-none',
+    bottom: 20,
+    right: 20,
+    zIndex: 100,
   },
   backdrop: {
     position: 'absolute',
@@ -311,28 +315,31 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 10,
   },
-  fabButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    overflow: 'hidden',
+  fabShadowContainer: {
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
       },
       android: {
         elevation: 8,
       },
     }),
   },
+  fabButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    overflow: 'hidden',
+  },
   fabGradient: {
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 28,
   },
 });
 

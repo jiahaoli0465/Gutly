@@ -132,6 +132,8 @@ export default function MealsScreen() {
   useEffect(() => {
     if (params.add) {
       router.setParams({ add: undefined });
+      setAddMealMode('manual');
+      setShowAddMealSheet(true);
     }
   }, [params.add]);
 
@@ -278,6 +280,7 @@ export default function MealsScreen() {
           setAddMealMode(null);
         }}
         initialMode={addMealMode}
+        key={showAddMealSheet ? 'open' : 'closed'}
       />
     </SafeAreaView>
   );
