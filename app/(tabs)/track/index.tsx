@@ -17,8 +17,8 @@ import { AddMealModal } from './components/AddMealModal';
 import { EmptyState } from './components/EmptyState';
 import { Header } from './components/Header';
 import { ItemDetailModal } from './components/ItemDetailModal';
-import { LogSymptomModal } from './components/LogSymptomModal';
 import { MealCard } from './components/MealCard';
+import { LogSymptomModal } from './components/symptom/LogSymptomModal';
 import { SymptomCard } from './components/SymptomCard';
 import { MealItem, SymptomItem, TimelineItem } from './types';
 
@@ -28,7 +28,8 @@ const MOCK_TIMELINE_ITEMS: TimelineItem[] = [
     id: '1',
     type: 'meal',
     timestamp: new Date('2024-05-09T08:30:00'),
-    photo: 'https://picsum.photos/300/200',
+    photo:
+      'https://images.unsplash.com/photo-1488477181946-6428a848b919?w=800&auto=format&fit=crop&q=60',
     foodLabels: ['Greek Yogurt', 'Granola', 'Blueberries'],
     calories: 310,
   },
@@ -44,7 +45,8 @@ const MOCK_TIMELINE_ITEMS: TimelineItem[] = [
     id: '3',
     type: 'meal',
     timestamp: new Date('2024-05-09T12:45:00'),
-    photo: 'https://picsum.photos/300/200',
+    photo:
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=60',
     foodLabels: ['Quinoa Salad', 'Grilled Chicken', 'Avocado'],
     calories: 560,
   },
@@ -162,7 +164,7 @@ export default function TrackerScreen() {
 
   const sortedItems = useMemo(() => {
     return [...items].sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
   }, [items]);
 

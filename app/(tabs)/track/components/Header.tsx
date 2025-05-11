@@ -37,104 +37,100 @@ export const Header = () => {
           </Text>
         </View>
 
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              { backgroundColor: theme.colors.background.paper },
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="calendar-month"
-              size={20}
-              color={theme.colors.primary.main}
-            />
-          </TouchableOpacity>
+        <View style={styles.rightSection}>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: theme.colors.background.paper },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="calendar-month"
+                size={20}
+                color={theme.colors.primary.main}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: theme.colors.background.paper,
+                  marginLeft: 8,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="filter-variant"
+                size={20}
+                color={theme.colors.primary.main}
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={[
-              styles.iconButton,
+              styles.summaryPill,
               {
                 backgroundColor: theme.colors.background.paper,
-                marginLeft: 8,
+                ...Platform.select({
+                  ios: {
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 2,
+                  },
+                  android: {
+                    elevation: 2,
+                  },
+                }),
               },
             ]}
           >
-            <MaterialCommunityIcons
-              name="filter-variant"
-              size={20}
-              color={theme.colors.primary.main}
-            />
+            <View style={styles.summaryContent}>
+              <View style={styles.summaryItem}>
+                <MaterialCommunityIcons
+                  name="silverware-fork-knife"
+                  size={14}
+                  color={theme.colors.primary.main}
+                  style={styles.summaryIcon}
+                />
+                <Text
+                  style={[
+                    styles.summaryText,
+                    { color: theme.colors.text.primary },
+                  ]}
+                >
+                  2
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.summaryDivider,
+                  { backgroundColor: theme.colors.divider },
+                ]}
+              />
+
+              <View style={styles.summaryItem}>
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={14}
+                  color={theme.colors.error.main}
+                  style={styles.summaryIcon}
+                />
+                <Text
+                  style={[
+                    styles.summaryText,
+                    { color: theme.colors.text.primary },
+                  ]}
+                >
+                  2
+                </Text>
+              </View>
+            </View>
           </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.summaryBar}>
-        <View
-          style={[
-            styles.summaryItem,
-            {
-              backgroundColor: theme.colors.background.paper,
-              ...Platform.select({
-                ios: {
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                },
-                android: {
-                  elevation: 2,
-                },
-              }),
-            },
-          ]}
-        >
-          <View style={styles.summaryItem}>
-            <View
-              style={[
-                styles.summaryIcon,
-                { backgroundColor: `${theme.colors.primary.light}15` },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="silverware-fork-knife"
-                size={14}
-                color={theme.colors.primary.main}
-              />
-            </View>
-            <Text
-              style={[styles.summaryText, { color: theme.colors.text.primary }]}
-            >
-              2 Meals
-            </Text>
-          </View>
-
-          <View
-            style={[
-              styles.summaryDivider,
-              { backgroundColor: theme.colors.divider },
-            ]}
-          />
-
-          <View style={styles.summaryItem}>
-            <View
-              style={[
-                styles.summaryIcon,
-                { backgroundColor: `${theme.colors.error.light}15` },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="alert-circle-outline"
-                size={14}
-                color={theme.colors.error.main}
-              />
-            </View>
-            <Text
-              style={[styles.summaryText, { color: theme.colors.text.primary }]}
-            >
-              2 Symptoms
-            </Text>
-          </View>
         </View>
       </View>
     </View>
@@ -144,14 +140,16 @@ export const Header = () => {
 const styles = StyleSheet.create({
   headerContainer: {
     paddingTop: 8,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: 24,
-    paddingBottom: 16,
+  },
+  rightSection: {
+    alignItems: 'flex-end',
   },
   headerTitle: {
     fontSize: 28,
@@ -165,6 +163,7 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   iconButton: {
     width: 36,
@@ -184,35 +183,31 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  summaryBar: {
+  summaryPill: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  summaryContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   summaryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 4,
   },
   summaryIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 4,
   },
   summaryText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
   },
   summaryDivider: {
     width: 1,
-    height: 16,
-    marginHorizontal: 12,
+    height: 12,
+    marginHorizontal: 8,
   },
 });
