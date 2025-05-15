@@ -182,7 +182,6 @@ export default function TabLayout() {
           tabBarStyle: {
             position: 'absolute',
             bottom: bottomInset,
-
             marginHorizontal: 20,
             width: Dimensions.get('window').width - 40,
             height: tabBarHeight,
@@ -215,24 +214,15 @@ export default function TabLayout() {
             ),
           }}
         />
-        {/* <Tabs.Screen
-          name="insights/index"
-          options={{
-            title: 'Insights',
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon name="analytics-outline" isFocused={focused} />
-            ),
-          }}
-        />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ focused }) => (
-              <TabBarIcon name="person-outline" isFocused={focused} />
+              <TabBarIcon name="person" isFocused={focused} />
             ),
           }}
-        /> */}
+        />
       </Tabs>
     </>
   );

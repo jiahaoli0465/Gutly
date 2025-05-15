@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -11,12 +10,24 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DailyProgress from '../../components/DailyProgress';
 import QuickActionFAB from '../../components/QuickActionFAB';
+import SmartRecommendations from '../../components/SmartRecommendations';
 import StatCard from '../../components/StatCard';
 import { useTheme } from '../../context/ThemeContext';
 
 type IconName = keyof typeof Ionicons.glyphMap;
+
+interface User {
+  name: string;
+  email: string;
+  preferences: {
+    notifications: boolean;
+    darkMode: boolean;
+    reminders: boolean;
+  };
+}
 
 interface Symptom {
   id: number;
@@ -24,6 +35,7 @@ interface Symptom {
   severity: string;
   time: string;
   icon: IconName;
+  notes: string;
 }
 
 interface FoodInsight {
@@ -32,6 +44,8 @@ interface FoodInsight {
   impact: 'Positive' | 'Negative';
   confidence: 'High' | 'Medium' | 'Low';
   icon: IconName;
+  details: string;
+  correlation: string;
 }
 
 interface Recommendation {
@@ -40,6 +54,8 @@ interface Recommendation {
   description: string;
   icon: IconName;
   priority: 'high' | 'medium' | 'low';
+  action: string;
+  reasoning: string;
 }
 
 interface Product {
@@ -50,12 +66,30 @@ interface Product {
   price: string;
   image: string;
   benefits: string[];
+  aiMatch: string;
 }
 
-export default function HomePage() {
-  const { theme } = useTheme();
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
+};
+
+const HomePage = () => {
+  const { theme, isDark, toggleTheme } = useTheme();
   const router = useRouter();
   const [modal, setModal] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const [user, setUser] = useState<User>({
+    name: 'Jiahao',
+    email: 'jiahao@example.com',
+    preferences: {
+      notifications: true,
+      darkMode: isDark,
+      reminders: true,
+    },
+  });
 
   const quickActions = [
     {
@@ -86,152 +120,245 @@ export default function HomePage() {
     recentSymptoms: [
       {
         id: 1,
-        symptom: 'Bloating',
-        severity: 'Mild',
-        time: '2h ago',
-        icon: 'water-outline' as IconName,
+        symptom: 'Post-Lunch Bloating',
+        severity: 'Moderate',
+        time: 'Yesterday, 2 PM',
+        icon: 'restaurant-outline' as IconName,
+        notes: 'Occurred after consuming dairy-based lunch',
       },
       {
         id: 2,
-        symptom: 'Abdominal Pain',
-        severity: 'Moderate',
-        time: '5h ago',
-        icon: 'alert-circle-outline' as IconName,
+        symptom: 'Morning Stomach Cramps',
+        severity: 'Mild',
+        time: 'Today, 8 AM',
+        icon: 'cafe-outline' as IconName,
+        notes: 'Started after breakfast smoothie with apple',
       },
       {
         id: 3,
-        symptom: 'Gas',
+        symptom: 'Evening Gas & Discomfort',
+        severity: 'Moderate',
+        time: 'Yesterday, 9 PM',
+        icon: 'bed-outline' as IconName,
+        notes: 'Followed late dinner with processed foods',
+      },
+      {
+        id: 4,
+        symptom: 'Low Energy Dip',
         severity: 'Mild',
-        time: '8h ago',
-        icon: 'cloud-outline' as IconName,
+        time: 'Today, 3 PM',
+        icon: 'battery-half-outline' as IconName,
+        notes: 'Coincided with missed lunch and high-sugar snack',
       },
     ] as Symptom[],
 
     foodInsights: [
       {
         id: 1,
-        food: 'Dairy Products',
+        food: 'Lactose Sensitivity Detected',
         impact: 'Negative',
         confidence: 'High',
-        icon: 'nutrition-outline' as IconName,
+        icon: 'alert-circle' as IconName,
+        details:
+          'Bloating and gas reported on 4 of last 5 days with dairy consumption. Consider trial elimination or lactase supplements.',
+        correlation: 'Strong correlation with post-meal bloating',
       },
       {
         id: 2,
-        food: 'Leafy Greens',
-        impact: 'Positive',
-        confidence: 'High',
-        icon: 'leaf-outline' as IconName,
+        food: 'High FODMAP Fruits Pattern',
+        impact: 'Negative',
+        confidence: 'Medium',
+        icon: 'nutrition' as IconName,
+        details:
+          'Apples and pears consumption linked to increased bloating. These are high in FODMAPs which can trigger IBS symptoms.',
+        correlation: 'Moderate correlation with morning symptoms',
       },
       {
         id: 3,
-        food: 'Processed Foods',
-        impact: 'Negative',
+        food: 'Fermented Foods Impact',
+        impact: 'Positive',
+        confidence: 'High',
+        icon: 'leaf' as IconName,
+        details:
+          'Days with kimchi or kefir show 60% reduction in bloating reports. These foods support gut microbiome diversity.',
+        correlation: 'Strong positive correlation with overall gut comfort',
+      },
+      {
+        id: 4,
+        food: 'Soluble Fiber Benefits',
+        impact: 'Positive',
         confidence: 'Medium',
-        icon: 'fast-food-outline' as IconName,
+        icon: 'analytics' as IconName,
+        details:
+          'Oatmeal breakfasts associated with better digestion scores. Soluble fiber helps regulate gut motility.',
+        correlation: 'Moderate correlation with reduced bloating',
       },
     ] as FoodInsight[],
 
     dailyProgress: {
       waterIntake: 6,
-      waterGoal: 8,
-      fiberIntake: 18,
-      fiberGoal: 25,
+      waterGoal: 10,
+      fiberIntake: 20,
+      fiberGoal: 30,
       probioticFoods: 2,
       probioticGoal: 3,
+      mealsLogged: 2,
+      mealsGoal: 3,
     },
 
     smartRecommendations: [
       {
         id: 1,
-        title: 'Try Fermented Foods',
+        title: 'Gut-Friendly Breakfast Swap',
         description:
-          'Add kimchi or sauerkraut to your next meal for gut-friendly bacteria',
-        icon: 'restaurant-outline' as IconName,
+          "Based on your recent bloating after dairy smoothies, try this overnight oats recipe with berries and chia seeds. It's lower in FODMAPs and provides soluble fiber for better digestion.",
+        icon: 'swap-horizontal' as IconName,
         priority: 'high',
+        action: 'View Recipe',
+        reasoning:
+          'AI detected pattern of morning symptoms after high-FODMAP breakfasts',
       },
       {
         id: 2,
-        title: 'Stay Hydrated',
-        description: 'Drink 2 more glasses of water today to support digestion',
-        icon: 'water-outline' as IconName,
+        title: 'Hydration Boost for Fiber',
+        description:
+          "You're increasing your fiber intake, which is great! Remember to drink 2 more glasses of water today to help with digestion and prevent constipation. Your current fiber-to-water ratio suggests you need more hydration.",
+        icon: 'water' as IconName,
         priority: 'medium',
+        action: 'Set Reminder',
+        reasoning:
+          'AI calculated optimal water intake based on fiber consumption',
       },
       {
         id: 3,
-        title: 'Avoid Late Night Snacks',
-        description: 'Your last meal was too close to bedtime',
-        icon: 'moon-outline' as IconName,
+        title: 'Explore Prebiotic Foods',
+        description:
+          'To support your microbiome diversity, try adding prebiotic-rich foods like garlic, onions, or asparagus (in moderation) to your meals this week. These feed your beneficial gut bacteria and may help reduce bloating.',
+        icon: 'nutrition' as IconName,
+        priority: 'medium',
+        action: 'View Food List',
+        reasoning:
+          'AI identified opportunity to improve gut microbiome diversity',
+      },
+      {
+        id: 4,
+        title: 'Mindful Meal Pacing',
+        description:
+          'We noticed your gas reports often occur after quickly consumed meals. Try setting aside 20 minutes for your next meal, focusing on thorough chewing. This can significantly reduce digestive discomfort.',
+        icon: 'timer' as IconName,
         priority: 'low',
+        action: 'Start Timer',
+        reasoning: 'AI detected correlation between eating speed and symptoms',
       },
     ] as Recommendation[],
 
     productSuggestions: [
       {
         id: 1,
-        name: 'Gut Health Probiotic',
-        brand: 'BioBalance',
-        rating: 4.8,
-        price: '$29.99',
-        image: 'https://placeholder.com/probiotic',
+        name: 'Lactase Enzyme Supplement',
+        brand: 'DigestWell',
+        rating: 4.7,
+        price: '$15.99',
+        image: 'https://placeholder.com/lactase',
         benefits: [
-          'Supports gut flora',
-          'Reduces bloating',
-          'Improves digestion',
+          'Helps digest lactose from dairy products',
+          'Reduces bloating and gas from dairy consumption',
+          'Take 15 minutes before dairy meals',
+          'Clinically proven to reduce lactose intolerance symptoms',
         ],
+        aiMatch: 'Recommended based on your dairy sensitivity pattern',
       },
       {
         id: 2,
-        name: 'Digestive Enzyme Complex',
-        brand: 'EnzymePro',
-        rating: 4.6,
-        price: '$24.99',
-        image: 'https://placeholder.com/enzyme',
+        name: 'High-Potency Multi-Strain Probiotic',
+        brand: 'GutRenew',
+        rating: 4.9,
+        price: '$39.99',
+        image: 'https://placeholder.com/probiotic',
         benefits: [
-          'Aids food breakdown',
-          'Reduces discomfort',
-          'Natural formula',
+          'Contains 15 clinically studied probiotic strains',
+          'Specifically formulated for IBS and bloating relief',
+          'Supports gut microbiome diversity',
+          'Delayed-release capsules for optimal delivery',
         ],
+        aiMatch: 'Suggested to support your gut microbiome diversity goals',
       },
     ] as Product[],
   };
 
+  const handleViewRecommendation = (recommendation: Recommendation) => {
+    // TODO: Implement recommendation details view
+    console.log('View recommendation:', recommendation);
+  };
+
+  const handleDismissRecommendation = (id: number) => {
+    // TODO: Implement recommendation dismissal
+    console.log('Dismiss recommendation:', id);
+  };
+
+  const handleTogglePreference = (key: keyof User['preferences']) => {
+    setUser((prev) => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        [key]: !prev.preferences[key],
+      },
+    }));
+
+    if (key === 'darkMode') {
+      toggleTheme();
+    }
+  };
+
+  const handleSignOut = () => {
+    // TODO: Implement sign out logic
+    console.log('Signing out...');
+    setModal(null);
+  };
+
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { backgroundColor: theme.colors.background.default },
       ]}
-      edges={['top']}
     >
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: insets.top + 16 },
+        ]}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
       >
         <View style={styles.header}>
           <View>
             <Text
-              style={[styles.greeting, { color: theme.colors.text.secondary }]}
+              style={[styles.greeting, { color: theme.colors.text.primary }]}
             >
-              Good morning,
+              Good {getGreeting()}
             </Text>
-            <Text style={[styles.name, { color: theme.colors.text.primary }]}>
-              Jiahao
+            <Text
+              style={[styles.name, { color: theme.colors.text.primary }]}
+              numberOfLines={1}
+            >
+              {user?.name || 'User'}
             </Text>
           </View>
-          <TouchableOpacity style={styles.profileButton}>
-            <LinearGradient
-              colors={[theme.colors.primary.main, theme.colors.primary.light]}
-              style={styles.profileGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Ionicons
-                name="person"
-                size={24}
-                color={theme.colors.primary.contrast}
-              />
-            </LinearGradient>
+          <TouchableOpacity
+            style={[
+              styles.profileButton,
+              { backgroundColor: theme.colors.background.paper },
+              theme.shadows.sm,
+            ]}
+            activeOpacity={0.7}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <Ionicons
+              name="person-circle-outline"
+              size={32}
+              color={theme.colors.primary.main}
+            />
           </TouchableOpacity>
         </View>
 
@@ -240,58 +367,23 @@ export default function HomePage() {
             title="Gut Score"
             value="85"
             icon="analytics"
-            trend={{ value: 12, isPositive: true }}
+            trend={{ value: 5, isPositive: true }}
           />
           <StatCard
             title="Diet Score"
-            value="78"
+            value="92"
             icon="nutrition"
-            trend={{ value: 5, isPositive: true }}
+            trend={{ value: 2, isPositive: true }}
           />
         </View>
 
-        <View style={styles.recommendationsContainer}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
-            Today's Recommendations
-          </Text>
-          <View
-            style={[
-              styles.recommendationCard,
-              { backgroundColor: theme.colors.background.paper },
-              theme.shadows.sm,
-            ]}
-          >
-            <View style={styles.recommendationContent}>
-              <View style={styles.recommendationHeader}>
-                <Ionicons
-                  name="bulb"
-                  size={24}
-                  color={theme.colors.primary.main}
-                />
-                <Text
-                  style={[
-                    styles.recommendationTitle,
-                    { color: theme.colors.text.primary },
-                  ]}
-                >
-                  Increase Fiber Intake
-                </Text>
-              </View>
-              <Text
-                style={[
-                  styles.recommendationText,
-                  { color: theme.colors.text.secondary },
-                ]}
-              >
-                Your gut microbiome would benefit from more fiber-rich foods.
-                Try adding more fruits, vegetables, and whole grains to your
-                diet.
-              </Text>
-            </View>
-          </View>
-        </View>
+        <SmartRecommendations
+          recommendations={mockData.smartRecommendations}
+          onViewDetails={handleViewRecommendation}
+          onDismiss={handleDismissRecommendation}
+        />
+
+        <DailyProgress progress={mockData.dailyProgress} />
 
         <View style={styles.section}>
           <Text
@@ -389,140 +481,6 @@ export default function HomePage() {
           <Text
             style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
           >
-            Daily Progress
-          </Text>
-          <View
-            style={[
-              styles.progressCard,
-              { backgroundColor: theme.colors.background.paper },
-              theme.shadows.sm,
-            ]}
-          >
-            <View style={styles.progressItem}>
-              <View style={styles.progressHeader}>
-                <Ionicons
-                  name="water-outline"
-                  size={20}
-                  color={theme.colors.primary.main}
-                />
-                <Text
-                  style={[
-                    styles.progressLabel,
-                    { color: theme.colors.text.primary },
-                  ]}
-                >
-                  Water Intake
-                </Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${
-                        (mockData.dailyProgress.waterIntake /
-                          mockData.dailyProgress.waterGoal) *
-                        100
-                      }%`,
-                      backgroundColor: theme.colors.primary.main,
-                    },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.progressText,
-                  { color: theme.colors.text.secondary },
-                ]}
-              >
-                {mockData.dailyProgress.waterIntake}/
-                {mockData.dailyProgress.waterGoal} glasses
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
-            Smart Recommendations
-          </Text>
-          {mockData.smartRecommendations.map((rec) => (
-            <TouchableOpacity
-              key={rec.id}
-              style={[
-                styles.recommendationCard,
-                { backgroundColor: theme.colors.background.paper },
-                theme.shadows.sm,
-              ]}
-            >
-              <View style={styles.recommendationContent}>
-                <View style={styles.recommendationHeader}>
-                  <Ionicons
-                    name={rec.icon}
-                    size={24}
-                    color={theme.colors.primary.main}
-                  />
-                  <View style={styles.recommendationTitleContainer}>
-                    <Text
-                      style={[
-                        styles.recommendationTitle,
-                        { color: theme.colors.text.primary },
-                      ]}
-                    >
-                      {rec.title}
-                    </Text>
-                    <View
-                      style={[
-                        styles.priorityBadge,
-                        {
-                          backgroundColor:
-                            rec.priority === 'high'
-                              ? theme.colors.error.light
-                              : rec.priority === 'medium'
-                              ? theme.colors.warning.light
-                              : theme.colors.success.light,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.priorityText,
-                          {
-                            color:
-                              rec.priority === 'high'
-                                ? theme.colors.error.main
-                                : rec.priority === 'medium'
-                                ? theme.colors.warning.main
-                                : theme.colors.success.main,
-                          },
-                        ]}
-                      >
-                        {rec.priority.charAt(0).toUpperCase() +
-                          rec.priority.slice(1)}{' '}
-                        Priority
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <Text
-                  style={[
-                    styles.recommendationText,
-                    { color: theme.colors.text.secondary },
-                  ]}
-                >
-                  {rec.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
             Recommended Products
           </Text>
           <ScrollView
@@ -611,42 +569,9 @@ export default function HomePage() {
       </ScrollView>
 
       <QuickActionFAB actions={quickActions} />
-
-      {modal && (
-        <View style={styles.modalOverlay} pointerEvents="box-none">
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: theme.colors.background.paper },
-            ]}
-          >
-            <Text
-              style={[styles.modalTitle, { color: theme.colors.text.primary }]}
-            >
-              {modal}
-            </Text>
-            <TouchableOpacity
-              onPress={() => setModal(null)}
-              style={[
-                styles.modalClose,
-                { backgroundColor: theme.colors.background.elevated },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.modalCloseText,
-                  { color: theme.colors.text.secondary },
-                ]}
-              >
-                Close
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-    </SafeAreaView>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -737,8 +662,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalScrollView: {
+    flex: 1,
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
   modalContent: {
-    width: '80%',
+    width: '100%',
     borderRadius: 16,
     padding: 24,
     ...Platform.select({
@@ -753,11 +686,75 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  profileAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 16,
-    textAlign: 'center',
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 16,
+  },
+  preferencesSection: {
+    marginBottom: 32,
+  },
+  preferencesList: {
+    gap: 16,
+  },
+  preferenceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  preferenceInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  preferenceLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  toggle: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    padding: 2,
+  },
+  toggleHandle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  actionsSection: {
+    gap: 12,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalClose: {
     padding: 12,
@@ -844,21 +841,6 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 14,
   },
-  recommendationTitleContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginTop: 4,
-  },
-  priorityText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
   productsScroll: {
     marginHorizontal: -24,
     paddingHorizontal: 24,
@@ -914,3 +896,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+export default HomePage;
