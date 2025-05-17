@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Image,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,10 +11,19 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DailyProgress from '../../components/DailyProgress';
+import FoodInsights from '../../components/FoodInsights';
 import QuickActionFAB from '../../components/QuickActionFAB';
+import RecentSymptoms from '../../components/RecentSymptoms';
+import RecommendedProducts from '../../components/RecommendedProducts';
 import SmartRecommendations from '../../components/SmartRecommendations';
 import StatCard from '../../components/StatCard';
 import { useTheme } from '../../context/ThemeContext';
+
+// Import product images
+const biomeBalanceImage = require('../../assets/images/biomebalance.png');
+const biomeDigestImage = require('../../assets/images/biomedigest.png');
+const biomeCalmImage = require('../../assets/images/biomecalm.png');
+const biomeBoostImage = require('../../assets/images/biomeboost.png');
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -64,7 +72,7 @@ interface Product {
   brand: string;
   rating: number;
   price: string;
-  image: string;
+  image: any; // Changed from string to any to support require()
   benefits: string[];
   aiMatch: string;
 }
@@ -255,33 +263,67 @@ const HomePage = () => {
     productSuggestions: [
       {
         id: 1,
-        name: 'Lactase Enzyme Supplement',
-        brand: 'DigestWell',
-        rating: 4.7,
-        price: '$15.99',
-        image: 'https://placeholder.com/lactase',
+        name: 'BiomeBalance™ Personalized Probiotic',
+        brand: 'Biome',
+        rating: 4.9,
+        price: '$49.99',
+        image: biomeBalanceImage,
         benefits: [
-          'Helps digest lactose from dairy products',
-          'Reduces bloating and gas from dairy consumption',
-          'Take 15 minutes before dairy meals',
-          'Clinically proven to reduce lactose intolerance symptoms',
+          'AI-matched strains based on your gut analysis',
+          'Personalized 50B CFU count for optimal results',
+          'Smart-release technology for better absorption',
+          'Real-time effectiveness tracking in app',
         ],
-        aiMatch: 'Recommended based on your dairy sensitivity pattern',
+        aiMatch:
+          'Recommended based on your gut microbiome diversity score (65/100) and recent bloating patterns. Our AI detected optimal strain combinations for your specific gut environment.',
       },
       {
         id: 2,
-        name: 'High-Potency Multi-Strain Probiotic',
-        brand: 'GutRenew',
-        rating: 4.9,
+        name: 'BiomeDigest™ Enzyme Complex',
+        brand: 'Biome',
+        rating: 4.8,
         price: '$39.99',
-        image: 'https://placeholder.com/probiotic',
+        image: biomeDigestImage,
         benefits: [
-          'Contains 15 clinically studied probiotic strains',
-          'Specifically formulated for IBS and bloating relief',
-          'Supports gut microbiome diversity',
-          'Delayed-release capsules for optimal delivery',
+          'Custom enzyme blend for your food sensitivities',
+          'Smart-dosing adapts to your meal size',
+          'Enhanced for your specific dietary patterns',
+          'Track effectiveness in real-time via app',
         ],
-        aiMatch: 'Suggested to support your gut microbiome diversity goals',
+        aiMatch:
+          'AI analysis of your food logs and symptom patterns shows 87% correlation between dairy consumption and digestive discomfort. This formulation is specifically calibrated to your sensitivity levels.',
+      },
+      {
+        id: 3,
+        name: 'BiomeCalm™ Gut Support',
+        brand: 'Biome',
+        rating: 4.9,
+        price: '$44.99',
+        image: biomeCalmImage,
+        benefits: [
+          'Personalized for your stress-symptom patterns',
+          'Smart-dosing aligned with your daily routine',
+          'Gut-brain axis support formula',
+          'Track stress-symptom correlation in app',
+        ],
+        aiMatch:
+          'Our AI detected a 72% correlation between your stress levels and digestive symptoms. This formulation is optimized for your specific stress-symptom patterns and daily schedule.',
+      },
+      {
+        id: 4,
+        name: 'BiomeBoost™ Prebiotic Fiber',
+        brand: 'Biome',
+        rating: 4.7,
+        price: '$34.99',
+        image: biomeBoostImage,
+        benefits: [
+          'Personalized fiber blend for your microbiome',
+          'Adaptive dosing based on daily intake',
+          'Targeted prebiotics for your gut bacteria',
+          'Track gut health impact in real-time',
+        ],
+        aiMatch:
+          'Based on your current fiber intake (20g/day) and gut microbiome analysis, this formulation is designed to bridge your fiber gap while supporting your specific beneficial bacteria.',
       },
     ] as Product[],
   };
@@ -314,6 +356,21 @@ const HomePage = () => {
     // TODO: Implement sign out logic
     console.log('Signing out...');
     setModal(null);
+  };
+
+  const handleProductPress = (product: Product) => {
+    // TODO: Implement product details view
+    console.log('View product:', product);
+  };
+
+  const handleInsightPress = (insight: FoodInsight) => {
+    // TODO: Implement insight details view
+    console.log('View insight:', insight);
+  };
+
+  const handleSymptomPress = (symptom: Symptom) => {
+    // TODO: Implement symptom details view
+    console.log('View symptom:', symptom);
   };
 
   return (
@@ -385,187 +442,20 @@ const HomePage = () => {
 
         <DailyProgress progress={mockData.dailyProgress} />
 
-        <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
-            Recent Symptoms
-          </Text>
-          <View style={styles.symptomsContainer}>
-            {mockData.recentSymptoms.map((symptom) => (
-              <TouchableOpacity
-                key={symptom.id}
-                style={[
-                  styles.symptomCard,
-                  { backgroundColor: theme.colors.background.paper },
-                  theme.shadows.sm,
-                ]}
-              >
-                <Ionicons
-                  name={symptom.icon}
-                  size={24}
-                  color={theme.colors.primary.main}
-                />
-                <View style={styles.symptomInfo}>
-                  <Text
-                    style={[
-                      styles.symptomName,
-                      { color: theme.colors.text.primary },
-                    ]}
-                  >
-                    {symptom.symptom}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.symptomDetail,
-                      { color: theme.colors.text.secondary },
-                    ]}
-                  >
-                    {symptom.severity} • {symptom.time}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        <RecentSymptoms
+          symptoms={mockData.recentSymptoms}
+          onSymptomPress={handleSymptomPress}
+        />
 
-        <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
-            Food Insights
-          </Text>
-          <View style={styles.insightsContainer}>
-            {mockData.foodInsights.map((insight) => (
-              <View
-                key={insight.id}
-                style={[
-                  styles.insightCard,
-                  { backgroundColor: theme.colors.background.paper },
-                  theme.shadows.sm,
-                ]}
-              >
-                <Ionicons
-                  name={insight.icon}
-                  size={24}
-                  color={
-                    insight.impact === 'Positive'
-                      ? theme.colors.success.main
-                      : theme.colors.error.main
-                  }
-                />
-                <View style={styles.insightInfo}>
-                  <Text
-                    style={[
-                      styles.insightFood,
-                      { color: theme.colors.text.primary },
-                    ]}
-                  >
-                    {insight.food}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.insightImpact,
-                      { color: theme.colors.text.secondary },
-                    ]}
-                  >
-                    {insight.impact} Impact • {insight.confidence} Confidence
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
+        <FoodInsights
+          insights={mockData.foodInsights}
+          onInsightPress={handleInsightPress}
+        />
 
-        <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: theme.colors.text.primary }]}
-          >
-            Recommended Products
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.productsScroll}
-          >
-            {mockData.productSuggestions.map((product) => (
-              <TouchableOpacity
-                key={product.id}
-                style={[
-                  styles.productCard,
-                  { backgroundColor: theme.colors.background.paper },
-                  theme.shadows.sm,
-                ]}
-              >
-                <Image
-                  source={{ uri: product.image }}
-                  style={styles.productImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.productInfo}>
-                  <Text
-                    style={[
-                      styles.productBrand,
-                      { color: theme.colors.text.secondary },
-                    ]}
-                  >
-                    {product.brand}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.productName,
-                      { color: theme.colors.text.primary },
-                    ]}
-                  >
-                    {product.name}
-                  </Text>
-                  <View style={styles.productRating}>
-                    <Ionicons
-                      name="star"
-                      size={16}
-                      color={theme.colors.warning.main}
-                    />
-                    <Text
-                      style={[
-                        styles.ratingText,
-                        { color: theme.colors.text.secondary },
-                      ]}
-                    >
-                      {product.rating}
-                    </Text>
-                  </View>
-                  <Text
-                    style={[
-                      styles.productPrice,
-                      { color: theme.colors.primary.main },
-                    ]}
-                  >
-                    {product.price}
-                  </Text>
-                  <View style={styles.benefitsContainer}>
-                    {product.benefits.map((benefit, index) => (
-                      <View key={index} style={styles.benefitItem}>
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={16}
-                          color={theme.colors.success.main}
-                        />
-                        <Text
-                          style={[
-                            styles.benefitText,
-                            { color: theme.colors.text.secondary },
-                          ]}
-                        >
-                          {benefit}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        <RecommendedProducts
+          products={mockData.productSuggestions}
+          onProductPress={handleProductPress}
+        />
       </ScrollView>
 
       <QuickActionFAB actions={quickActions} />
@@ -768,48 +658,6 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 32,
   },
-  symptomsContainer: {
-    gap: 12,
-  },
-  symptomCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  symptomInfo: {
-    flex: 1,
-  },
-  symptomName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  symptomDetail: {
-    fontSize: 14,
-  },
-  insightsContainer: {
-    gap: 12,
-  },
-  insightCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  insightInfo: {
-    flex: 1,
-  },
-  insightFood: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  insightImpact: {
-    fontSize: 14,
-  },
   progressCard: {
     padding: 20,
     borderRadius: 16,
@@ -840,60 +688,6 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 14,
-  },
-  productsScroll: {
-    marginHorizontal: -24,
-    paddingHorizontal: 24,
-  },
-  productCard: {
-    width: 280,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginRight: 16,
-  },
-  productImage: {
-    width: '100%',
-    height: 160,
-    backgroundColor: '#f0f0f0',
-  },
-  productInfo: {
-    padding: 16,
-  },
-  productBrand: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  productName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  productRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 8,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  productPrice: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  benefitsContainer: {
-    gap: 8,
-  },
-  benefitItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  benefitText: {
-    fontSize: 14,
-    flex: 1,
   },
 });
 
